@@ -25,10 +25,12 @@ class BotBrain
       end
 
       if retrieve_status[i] == "Fin"
-        if Time.parse(retrieve_dates[i]).to_date == Date.today
+        if Time.parse(retrieve_dates[i]).to_date == Date.today && retrieve_score_a[i] != retrieve_score_b[i]
           answer << "• Score final: *#{retrieve_countries_a[i]}* [#{retrieve_score_a[i]} - #{retrieve_score_b[i]}] *#{retrieve_countries_b[i]}* \r"
+        elsif retrieve_score_a[i] == retrieve_score_b[i]
+          answer << "• *#{retrieve_countries_a[i]}* vs *#{retrieve_countries_b[i]}*: après les prolongations, _*#{retrieve_winner}*_ \r"
         end
-      elsif Time.parse(retrieve_start_times[i]) > (Time.now + 7200)
+      elsif Time.parse(retrieve_start_times[i]) > (Time.now )
         answer << "• Le #{retrieve_dates[i]}, à *#{retrieve_start_times[i]}* les équipes du #{retrieve_groups[i]} *#{retrieve_countries_a[i]}* et *#{retrieve_countries_b[i]}* s'affrontent à #{retrieve_venues[i]}. _Le match n'a pas encore commencé_ 😕 \r\r"
       elsif retrieve_live_match.to_s.include?(retrieve_dates[i])
         answer << "• Pour l'instant le score est de *#{retrieve_score_a[i]}* pour *#{retrieve_countries_a[i]}* et *#{retrieve_score_b[i]}* pour *#{retrieve_countries_b[i]}* \r"
@@ -41,6 +43,10 @@ class BotBrain
 
     def self.doc
       Nokogiri::HTML(open("https://fr.fifa.com/worldcup"))
+    end
+
+    def self.retrieve_winner
+      doc.css('.result').css('.fi-mu__reasonwin-text').map(&:text).map {|win| win.gsub( / *\n+/, "" ).gsub( / *\r+/, "" ).lstrip.rstrip }[0]
     end
 
     def self.retrieve_dates
