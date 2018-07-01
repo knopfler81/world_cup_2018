@@ -12,15 +12,24 @@ require 'eventmachine'
 
 class BotBrain
 
+
+
   def self.bot_answer
-    answer = ""
+    answer = "🇫🇷 *ALLEZ LES BLEUS* 🇫🇷\r\r"
     (0..3).each do |i|
       retrieve_score_a[i] = 0 if retrieve_score_a[i] == ""
       retrieve_score_b[i] = 0 if retrieve_score_b[i] == ""
+
+      if retrieve_countries_a == "France" || retrieve_countries_b == "France"
+        answer << "🇫🇷 *Cocorico!!* 🇫🇷\r Tous avec les bleus ajourd'hui"
+      end
+
       if retrieve_status[i] == "Fin"
-        answer << "• Score final: *#{retrieve_countries_a[i]}* [#{retrieve_score_a[i]} - #{retrieve_score_b[i]}] *#{retrieve_countries_b[i]}* \r"
+        if Time.parse(retrieve_dates[i]).to_date == Date.today
+          answer << "• Score final: *#{retrieve_countries_a[i]}* [#{retrieve_score_a[i]} - #{retrieve_score_b[i]}] *#{retrieve_countries_b[i]}* \r"
+        end
       elsif Time.parse(retrieve_start_times[i]) > (Time.now + 7200)
-        answer << "• À *#{retrieve_start_times[i]}* les équipes du #{retrieve_groups[i]} *#{retrieve_countries_a[i]}* et *#{retrieve_countries_b[i]}* s'affrontent à #{retrieve_venues[i]}. _Le match n'a pas encore commencé_ 😕 \r\r"
+        answer << "• Le #{retrieve_dates[i]}, à *#{retrieve_start_times[i]}* les équipes du #{retrieve_groups[i]} *#{retrieve_countries_a[i]}* et *#{retrieve_countries_b[i]}* s'affrontent à #{retrieve_venues[i]}. _Le match n'a pas encore commencé_ 😕 \r\r"
       elsif retrieve_live_match.to_s.include?(retrieve_dates[i])
         answer << "• Pour l'instant le score est de *#{retrieve_score_a[i]}* pour *#{retrieve_countries_a[i]}* et *#{retrieve_score_b[i]}* pour *#{retrieve_countries_b[i]}* \r"
       end
@@ -39,8 +48,7 @@ class BotBrain
     end
 
     def self.retrieve_start_times
-       doc.css('.fi-mu__match-time').map {|t| t.attributes["data-timeutc"].value}.map {|time| (Time.parse(time) + 7200).strftime("%H:%M")}
-       # doc.css('.fi-mu__m').map {|time| time.css('.fi-mu__score-info').css('.fi-mu__match-time').css('.fi-s__scoreText').map(&:text)}.flatten.map{|time| time.gsub( / *\n+/, "" ).gsub( / *\r+/, "" ).lstrip.rstrip }.map {|time| (Time.parse(time) - 3600).strftime("%H:%M")}
+      doc.css('.fi-mu__m').map {|time| time.css('.fi-mu__score-info').css('.fi-mu__match-time').css('.fi-s__scoreText').map(&:text)}.flatten.map{|time| time.gsub( / *\n+/, "" ).gsub( / *\r+/, "" ).lstrip.rstrip }.map {|time| (Time.parse(time) - 3600).strftime("%H:%M")}
     end
 
     def self.retrieve_groups
